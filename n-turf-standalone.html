@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N TURF - Real-Time Turf Slot Booking & Arena Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass { background: rgba(24, 24, 27, 0.75); backdrop-filter: blur(12px); }
+        .turf-grid-pattern {
+            background-color: #09090b;
+            background-image: radial-gradient(#22c55e 0.75px, transparent 0.75px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col turf-grid-pattern">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 border-b border-zinc-800 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-brand-500 flex items-center justify-center font-black text-xl text-zinc-950 shadow-lg shadow-emerald-900/30">
+                    N
+                </div>
+                <div>
+                    <span class="font-extrabold text-xl tracking-tight text-white">N TURF</span>
+                    <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">Arena Live</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-zinc-400">
+                    <a href="#booking" class="hover:text-emerald-400 transition">Book Slot</a>
+                    <a href="#arenas" class="hover:text-emerald-400 transition">Arenas</a>
+                    <a href="#admin" onclick="toggleAdminView()" class="hover:text-emerald-400 transition flex items-center gap-1">
+                        <i class="fa-solid fa-sliders text-xs"></i> Admin Portal
+                    </a>
+                </div>
+                <button onclick="openBookingDrawer()" class="relative bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-md shadow-emerald-500/20">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Selected Slots</span>
+                    <span id="badge-count" class="bg-zinc-950 text-emerald-400 text-xs px-2 py-0.5 rounded-full font-extrabold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Banner / Status Hero -->
+        <div class="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-900/80 to-zinc-950 p-6 sm:p-8">
+            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="space-y-2 max-w-2xl">
+                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Real-Time Slot Engine
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+                        Book Premium Sports Arenas Instantly
+                    </h1>
+                    <p class="text-zinc-400 text-sm sm:text-base">
+                        Select date, choose your preferred pitch, lock time slots in real time, and verify payments instantly via UPI deep link or QR code.
+                    </p>
+                </div>
+
+                <!-- Legend & Quick Stats -->
+                <div class="flex flex-wrap gap-3 sm:gap-4 bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/80">
+                    <div class="flex items-center gap-2 text-xs text-zinc-300">
+                        <span class="w-3.5 h-3.5 rounded-md bg-zinc-800 border border-zinc-700 inline-block"></span>
+                        Available (₹800)
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-300">
+                        <span class="w-3.5 h-3.5 rounded-md bg-amber-500/20 border border-amber-500/40 inline-block"></span>
+                        Peak Hours (₹1,200)
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-300">
+                        <span class="w-3.5 h-3.5 rounded-md bg-emerald-500 inline-block"></span>
+                        Selected
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-300">
+                        <span class="w-3.5 h-3.5 rounded-md bg-zinc-900 border border-zinc-800 opacity-40 inline-block"></span>
+                        Booked
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section: Date & Turf Selector -->
+        <section id="booking" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800">
+                <!-- Date Bar -->
+                <div class="flex items-center space-x-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none" id="date-selector">
+                    <!-- Dynamic Date Buttons Generated by JS -->
+                </div>
+
+                <!-- Turf Pitch Selector -->
+                <div class="flex items-center space-x-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800">
+                    <button onclick="switchTurf('turf-1')" id="btn-turf-1" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-zinc-950">
+                        Turf A (5-a-side)
+                    </button>
+                    <button onclick="switchTurf('turf-2')" id="btn-turf-2" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white">
+                        Turf B (7-a-side)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Slots Grid Section -->
+            <div class="bg-zinc-900/40 rounded-3xl border border-zinc-800 p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2" id="selected-turf-title">
+                            Turf A (5-a-side)
+                        </h2>
+                        <p class="text-xs text-zinc-400" id="selected-date-display">Select available time slots below</p>
+                    </div>
+                    <span class="text-xs bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full font-medium" id="available-count-badge">
+                        Loading slots...
+                    </span>
+                </div>
+
+                <!-- Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="slots-container">
+                    <!-- Dynamic Slots Injected Here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Management Panel (Hidden by Default) -->
+        <section id="admin-section" class="hidden bg-zinc-900/90 border border-amber-500/30 rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-amber-500/10 text-amber-400 rounded-xl">
+                        <i class="fa-solid fa-user-shield text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white">Arena Management Control</h3>
+                        <p class="text-xs text-zinc-400">Manage bookings, block slots for maintenance, and override schedules.</p>
+                    </div>
+                </div>
+                <button onclick="toggleAdminView()" class="text-zinc-400 hover:text-white text-sm">
+                    <i class="fa-solid fa-xmark"></i> Close
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="resetAllBookings()" class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-bold rounded-xl transition">
+                    Reset All Saved Bookings
+                </button>
+                <button onclick="toggleBlockMode()" id="block-mode-btn" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-xl transition">
+                    Block/Unblock Mode: OFF
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Side Booking Drawer -->
+    <div id="drawer-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300" onclick="closeBookingDrawer()"></div>
+    
+    <div id="booking-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[440px] bg-zinc-900 border-l border-zinc-800 z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col">
+        <div class="p-6 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-receipt text-emerald-400"></i>
+                <h3 class="font-bold text-lg text-white">Slot Summary</h3>
+            </div>
+            <button onclick="closeBookingDrawer()" class="p-2 text-zinc-400 hover:text-white rounded-lg bg-zinc-800/50">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="p-6 flex-grow overflow-y-auto space-y-4" id="drawer-items">
+            <!-- Selected Slots Injected Here -->
+        </div>
+
+        <div class="p-6 border-t border-zinc-800 bg-zinc-950 space-y-4">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-zinc-400">
+                    <span>Base Amount</span>
+                    <span id="summary-base">₹0</span>
+                </div>
+                <div class="flex justify-between text-zinc-400">
+                    <span>Taxes & Maintenance</span>
+                    <span id="summary-tax">₹0</span>
+                </div>
+                <div class="flex justify-between text-lg font-extrabold text-white pt-2 border-t border-zinc-800">
+                    <span>Total Payable</span>
+                    <span class="text-emerald-400" id="summary-total">₹0</span>
+                </div>
+            </div>
+
+            <button onclick="proceedToPayment()" id="btn-proceed" disabled class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-800 disabled:text-zinc-500 text-zinc-950 font-bold rounded-xl transition flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/20">
+                <span>Proceed to UPI Payment</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- UPI Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl relative">
+            <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-2">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Instant Payment Verification</span>
+                <h3 class="text-xl font-extrabold text-white">Scan UPI QR Code</h3>
+                <p class="text-xs text-zinc-400">Use GPay, PhonePe, Paytm, or any UPI App to complete payment</p>
+            </div>
+
+            <!-- Dynamic QR Box -->
+            <div class="bg-white p-4 rounded-2xl w-48 h-48 mx-auto flex flex-col items-center justify-center border-4 border-emerald-500/30 relative">
+                <img id="upi-qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=nturf@upi&pn=NTURF%20Arena&am=800&cu=INR" alt="UPI QR Code" class="w-full h-full object-contain">
+            </div>
+
+            <div class="text-center space-y-1">
+                <div class="text-xs text-zinc-400">Paying Amount</div>
+                <div class="text-2xl font-black text-emerald-400" id="modal-pay-amount">₹0</div>
+                <div class="text-[11px] text-zinc-500 font-mono">UPI ID: nturf@upi</div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Transaction Ref / UTR Number</label>
+                    <input type="text" id="utr-input" placeholder="e.g. 423984019283" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                </div>
+
+                <button onclick="verifyAndConfirmPayment()" id="btn-verify" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-bold rounded-xl transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Verify & Confirm Booking</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-zinc-900 border border-emerald-500/40 text-zinc-100 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+        <i class="fa-solid fa-circle-info text-emerald-400" id="toast-icon"></i>
+        <span class="text-sm font-medium" id="toast-message">Notification message</span>
+    </div>
+
+    <script>
+        // State Engine
+        const SLOT_PRICES = { regular: 800, peak: 1200 };
+        const HOURS = [
+            { time: "06:00 AM - 07:00 AM", peak: false },
+            { time: "07:00 AM - 08:00 AM", peak: false },
+            { time: "08:00 AM - 09:00 AM", peak: false },
+            { time: "09:00 AM - 10:00 AM", peak: false },
+            { time: "04:00 PM - 05:00 PM", peak: false },
+            { time: "05:00 PM - 06:00 PM", peak: false },
+            { time: "06:00 PM - 07:00 PM", peak: true },
+            { time: "07:00 PM - 08:00 PM", peak: true },
+            { time: "08:00 PM - 09:00 PM", peak: true },
+            { time: "09:00 PM - 10:00 PM", peak: true },
+            { time: "10:00 PM - 11:00 PM", peak: true },
+            { time: "11:00 PM - 12:00 AM", peak: true }
+        ];
+
+        let selectedDate = new Date().toISOString().split('T')[0];
+        let currentTurf = 'turf-1';
+        let selectedSlots = []; // Array of slot keys: "turf-1_2026-04-19_06:00 AM - 07:00 AM"
+        let bookedSlots = JSON.parse(localStorage.getItem('nturf_booked_slots') || '{}');
+        let blockMode = false;
+
+        // Init App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDateSelector();
+            renderSlots();
+        });
+
+        function renderDateSelector() {
+            const container = document.getElementById('date-selector');
+            container.innerHTML = '';
+            
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(today.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNum = d.getDate();
+                const month = d.toLocaleDateString('en-US', { month: 'short' });
+
+                const isSelected = dateStr === selectedDate;
+                
+                const btn = document.createElement('button');
+                btn.onclick = () => selectDate(dateStr);
+                btn.className = `flex-shrink-0 px-4 py-2 rounded-xl text-left border transition ${
+                    isSelected 
+                        ? 'bg-emerald-500 border-emerald-400 text-zinc-950 font-bold' 
+                        : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                }`;
+                btn.innerHTML = `
+                    <div class="text-[10px] uppercase tracking-wider ${isSelected ? 'text-zinc-900 font-semibold' : 'text-zinc-500'}">${dayName}</div>
+                    <div class="text-sm font-extrabold">${dayNum} ${month}</div>
+                `;
+                container.appendChild(btn);
+            }
+        }
+
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            renderDateSelector();
+            renderSlots();
+        }
+
+        function switchTurf(turfId) {
+            currentTurf = turfId;
+            document.getElementById('btn-turf-1').className = turfId === 'turf-1' 
+                ? 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-zinc-950' 
+                : 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white';
+            document.getElementById('btn-turf-2').className = turfId === 'turf-2' 
+                ? 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-zinc-950' 
+                : 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition text-zinc-400 hover:text-white';
+
+            document.getElementById('selected-turf-title').innerText = turfId === 'turf-1' ? 'Turf A (5-a-side Pitch)' : 'Turf B (7-a-side Arena)';
+            renderSlots();
+        }
+
+        function renderSlots() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+
+            document.getElementById('selected-date-display').innerText = `Schedule for ${selectedDate}`;
+
+            let availableCount = 0;
+
+            HOURS.forEach(slot => {
+                const slotKey = `${currentTurf}_${selectedDate}_${slot.time}`;
+                const isBooked = !!bookedSlots[slotKey];
+                const isSelected = selectedSlots.includes(slotKey);
+                const price = slot.peak ? SLOT_PRICES.peak : SLOT_PRICES.regular;
+
+                if (!isBooked) availableCount++;
+
+                const card = document.createElement('div');
+                card.onclick = () => handleSlotClick(slotKey, isBooked, slot, price);
+
+                let cardStyle = "bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-emerald-500/50 cursor-pointer";
+                if (isBooked) {
+                    cardStyle = "bg-zinc-900/40 border-zinc-800/40 text-zinc-600 opacity-50 cursor-not-allowed";
+                } else if (isSelected) {
+                    cardStyle = "bg-emerald-500 border-emerald-400 text-zinc-950 shadow-lg shadow-emerald-500/20 font-bold cursor-pointer";
+                } else if (slot.peak) {
+                    cardStyle = "bg-amber-500/5 border-amber-500/30 text-zinc-200 hover:border-amber-500 cursor-pointer";
+                }
+
+                card.className = `p-3.5 rounded-2xl border flex flex-col justify-between space-y-3 transition duration-150 ${cardStyle}`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="${isSelected ? 'text-zinc-950 font-bold' : slot.peak ? 'text-amber-400 font-semibold' : 'text-zinc-400'}">
+                            ${slot.peak ? '<i class="fa-solid fa-bolt text-[10px]"></i> Peak' : 'Standard'}
+                        </span>
+                        <span class="font-extrabold">${isBooked ? 'Booked' : '₹' + price}</span>
+                    </div>
+                    <div class="text-xs font-bold leading-tight ${isSelected ? 'text-zinc-950' : 'text-white'}">
+                        ${slot.time}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('available-count-badge').innerText = `${availableCount} Slots Available`;
+            updateBadge();
+        }
+
+        function handleSlotClick(slotKey, isBooked, slot, price) {
+            if (blockMode) {
+                if (bookedSlots[slotKey]) {
+                    delete bookedSlots[slotKey];
+                    showToast("Slot unlocked by admin");
+                } else {
+                    bookedSlots[slotKey] = { time: slot.time, price: price, bookedAt: new Date().toISOString() };
+                    showToast("Slot blocked by admin");
+                }
+                localStorage.setItem('nturf_booked_slots', JSON.stringify(bookedSlots));
+                renderSlots();
+                return;
+            }
+
+            if (isBooked) {
+                showToast("This slot is already booked!", "error");
+                return;
+            }
+
+            const index = selectedSlots.indexOf(slotKey);
+            if (index > -1) {
+                selectedSlots.splice(index, 1);
+            } else {
+                selectedSlots.push(slotKey);
+            }
+
+            renderSlots();
+            renderDrawerItems();
+        }
+
+        function updateBadge() {
+            document.getElementById('badge-count').innerText = selectedSlots.length;
+        }
+
+        function openBookingDrawer() {
+            document.getElementById('drawer-backdrop').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('drawer-backdrop').classList.remove('opacity-0');
+                document.getElementById('booking-drawer').classList.remove('translate-x-full');
+            }, 10);
+            renderDrawerItems();
+        }
+
+        function closeBookingDrawer() {
+            document.getElementById('booking-drawer').classList.add('translate-x-full');
+            document.getElementById('drawer-backdrop').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('drawer-backdrop').classList.add('hidden');
+            }, 300);
+        }
+
+        function renderDrawerItems() {
+            const container = document.getElementById('drawer-items');
+            container.innerHTML = '';
+
+            if (selectedSlots.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 space-y-3">
+                        <div class="w-12 h-12 rounded-2xl bg-zinc-800 text-zinc-500 flex items-center justify-center mx-auto text-xl">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                        </div>
+                        <p class="text-sm text-zinc-400">No time slots selected yet.</p>
+                    </div>
+                `;
+                document.getElementById('summary-base').innerText = '₹0';
+                document.getElementById('summary-tax').innerText = '₹0';
+                document.getElementById('summary-total').innerText = '₹0';
+                document.getElementById('btn-proceed').disabled = true;
+                return;
+            }
+
+            let total = 0;
+
+            selectedSlots.forEach(slotKey => {
+                const [turf, date, time] = slotKey.split('_');
+                const isPeak = HOURS.find(h => h.time === time)?.peak;
+                const price = isPeak ? SLOT_PRICES.peak : SLOT_PRICES.regular;
+                total += price;
+
+                const item = document.createElement('div');
+                item.className = "p-3.5 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between";
+                item.innerHTML = `
+                    <div>
+                        <div class="text-xs font-bold text-emerald-400">${turf === 'turf-1' ? 'Turf A (5v5)' : 'Turf B (7v7)'} • ${date}</div>
+                        <div class="text-sm font-bold text-white">${time}</div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm font-extrabold text-white">₹${price}</span>
+                        <button onclick="removeSlot('${slotKey}')" class="text-zinc-500 hover:text-red-400 text-xs p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            const tax = Math.round(total * 0.05); // 5% facility fee
+            const finalPayable = total + tax;
+
+            document.getElementById('summary-base').innerText = `₹${total}`;
+            document.getElementById('summary-tax').innerText = `₹${tax}`;
+            document.getElementById('summary-total').innerText = `₹${finalPayable}`;
+            document.getElementById('btn-proceed').disabled = false;
+        }
+
+        function removeSlot(slotKey) {
+            selectedSlots = selectedSlots.filter(s => s !== slotKey);
+            renderSlots();
+            renderDrawerItems();
+        }
+
+        function proceedToPayment() {
+            let total = 0;
+            selectedSlots.forEach(slotKey => {
+                const [,, time] = slotKey.split('_');
+                const isPeak = HOURS.find(h => h.time === time)?.peak;
+                total += isPeak ? SLOT_PRICES.peak : SLOT_PRICES.regular;
+            });
+            const tax = Math.round(total * 0.05);
+            const finalPayable = total + tax;
+
+            document.getElementById('modal-pay-amount').innerText = `₹${finalPayable}`;
+            
+            // Generate QR Code URL
+            const upiString = `upi://pay?pa=nturf@upi&pn=NTURF%20Arena&am=${finalPayable}&cu=INR`;
+            document.getElementById('upi-qr-code').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiString)}`;
+
+            closeBookingDrawer();
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function verifyAndConfirmPayment() {
+            const utr = document.getElementById('utr-input').value.trim();
+            if (!utr || utr.length < 6) {
+                showToast("Please enter a valid UPI Ref/UTR number", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btn-verify');
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Verifying with Bank...`;
+            btn.disabled = true;
+
+            setTimeout(() => {
+                selectedSlots.forEach(slotKey => {
+                    const [,, time] = slotKey.split('_');
+                    const isPeak = HOURS.find(h => h.time === time)?.peak;
+                    bookedSlots[slotKey] = {
+                        time: time,
+                        price: isPeak ? SLOT_PRICES.peak : SLOT_PRICES.regular,
+                        utr: utr,
+                        bookedAt: new Date().toISOString()
+                    };
+                });
+
+                localStorage.setItem('nturf_booked_slots', JSON.stringify(bookedSlots));
+                selectedSlots = [];
+                
+                btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Verify & Confirm Booking`;
+                btn.disabled = false;
+                document.getElementById('utr-input').value = '';
+
+                closePaymentModal();
+                renderSlots();
+                showToast("Booking Confirmed! Pass sent to your UPI handle.");
+            }, 1200);
+        }
+
+        function toggleAdminView() {
+            const sec = document.getElementById('admin-section');
+            sec.classList.toggle('hidden');
+        }
+
+        function toggleBlockMode() {
+            blockMode = !blockMode;
+            const btn = document.getElementById('block-mode-btn');
+            btn.innerText = `Block/Unblock Mode: ${blockMode ? 'ON (Click slots to block)' : 'OFF'}`;
+            btn.className = blockMode 
+                ? 'px-4 py-2 bg-amber-500 text-zinc-950 font-bold text-xs rounded-xl transition'
+                : 'px-4 py-2 bg-zinc-800 text-zinc-200 text-xs font-bold rounded-xl transition';
+        }
+
+        function resetAllBookings() {
+            if (confirm("Reset all saved bookings on this browser?")) {
+                localStorage.removeItem('nturf_booked_slots');
+                bookedSlots = {};
+                selectedSlots = [];
+                renderSlots();
+                showToast("All bookings reset successfully!");
+            }
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            const icon = document.getElementById('toast-icon');
+
+            messageEl.innerText = msg;
+            if (type === "error") {
+                icon.className = "fa-solid fa-circle-exclamation text-red-400";
+                toast.className = "fixed bottom-6 right-6 z-50 bg-zinc-900 border border-red-500/40 text-zinc-100 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400";
+                toast.className = "fixed bottom-6 right-6 z-50 bg-zinc-900 border border-emerald-500/40 text-zinc-100 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
